@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- The sign-in code must not leak to other sites through the Referer header. -->
+  <meta name="referrer" content="no-referrer">
+  <meta name="robots" content="noindex">
+  <title>TikTok sign-in · The Koi Pond</title>
+  <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+  <main>
+    <header>
+      <a class="brand" href="../../">The Koi Pond</a>
+      <h1 id="title">TikTok sign-in</h1>
+      <p id="intro" class="muted">This page receives the one-time code from TikTok after you approve the app. Nothing is sent anywhere from here.</p>
+    </header>
+
+    <section id="success" class="card" hidden>
+      <p><strong>Approved.</strong> Copy this code and paste it into the terminal where <code>link-tiktok</code> is waiting. It works once and expires within minutes.</p>
+      <textarea id="code" readonly aria-label="TikTok sign-in code"></textarea>
+      <button id="copy" type="button">Copy code</button>
+      <p class="muted" id="state"></p>
+    </section>
+
+    <section id="failure" class="card" hidden>
+      <p><strong>TikTok did not approve the sign-in.</strong></p>
+      <p id="error"></p>
+    </section>
+
+    <footer><a href="../../privacy.html">Privacy Policy</a> · <a href="../../terms.html">Terms of Service</a></footer>
+  </main>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get("code");
+    // Drop the code from the address bar and browser history once it has been read.
+    if (window.location.search) history.replaceState(null, "", window.location.pathname);
+
+    if (code) {
+      document.getElementById("success").hidden = false;
+      document.getElementById("code").value = code;
+      const state = params.get("state");
+      if (state) document.getElementById("state").textContent = "Check: " + state;
+      document.getElementById("copy").addEventListener("click", async () => {
+        const box = document.getElementById("code");
+        try {
+          await navigator.clipboard.writeText(box.value);
+        } catch {
+          box.select();
+          document.execCommand("copy");
+        }
+        document.getElementById("copy").textContent = "Copied";
+      });
+    } else if (params.get("error")) {
+      document.getElementById("failure").hidden = false;
+      document.getElementById("error").textContent =
+        params.get("error_description") || params.get("error");
+    }
+  </script>
+</body>
+</html>
